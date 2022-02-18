@@ -5,7 +5,7 @@ A tool to make text more interesting on Discord (and possibly others)
 # Usage
 
 ```bash
-rl some awesome quote
+ri some awesome quote
 ```
 
 Will output the following:
