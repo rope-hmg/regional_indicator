@@ -54,6 +54,7 @@ fn main() {
         let mut words = HashMap::new();
 
         words.insert("moon", ":u6708: ");
+        words.insert("having", ":u6709: ");
         words.insert("have", ":u6709: ");
         words.insert("has", ":u6709: ");
         words.insert("had", ":u6709: ");
