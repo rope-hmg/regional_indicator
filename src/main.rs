@@ -1,7 +1,27 @@
 use std::{collections::HashMap, env};
 
+use clap::Parser;
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+enum Args {
+    /// Paste the result in the terminal
+    Terminal,
+
+    /// Copy the reuslt to your clipboard
+    Clipboard,
+}
+
+impl Default for Args {
+    fn default() -> Self {
+        Self::Terminal
+    }
+}
+
 fn main() {
-    let letters = {
+    let args = Args::parse();
+
+    let letter_lookup = {
         let mut letters = HashMap::with_capacity(44);
 
         letters.insert('a', ":a: ");
@@ -18,7 +38,7 @@ fn main() {
         letters.insert('l', ":regional_indicator_l: ");
         letters.insert('m', ":regional_indicator_m: ");
         letters.insert('n', ":regional_indicator_n: ");
-        letters.insert('o', ":regional_indicator_o: ");
+        letters.insert('o', ":o2: ");
         letters.insert('p', ":regional_indicator_p: ");
         letters.insert('q', ":regional_indicator_q: ");
         letters.insert('r', ":regional_indicator_r: ");
@@ -45,12 +65,13 @@ fn main() {
         letters.insert('$', ":chart: ");
         letters.insert('£', ":chart: ");
         letters.insert('#', ":hash: ");
+        letters.insert('*', ":asterisk: ");
         letters.insert('"', ":chart: ");
         letters.insert('@', ":middle_finger: ");
         letters
     };
 
-    let words = {
+    let word_lookup = {
         let mut words = HashMap::new();
 
         words.insert("moon", ":u6708: ");
@@ -60,6 +81,14 @@ fn main() {
         words.insert("had", ":u6709: ");
         words.insert("vs", ":vs: ");
         words.insert("id", ":id: ");
+        words.insert("ab", ":ab: ");
+        words.insert("cl", ":cl: ");
+        words.insert("100", ":100: ");
+        words.insert("10", ":10: ");
+        words.insert("cool", ":cool: ");
+        words.insert("new", ":new: ");
+        words.insert("free", ":free: ");
+        words.insert("ok", ":ok: ");
         words.insert("1st", ":first_place: ");
         words.insert("2nd", ":second_place: ");
         words.insert("3rd", ":third_place: ");
@@ -75,15 +104,15 @@ fn main() {
 
     for arg in env::args().skip(1) {
         let lower = arg.to_ascii_lowercase();
-        let input_words = lower.split(' ');
+        let words = lower.split(' ');
 
-        for input_word in input_words {
-            if let Some(word) = words.get(input_word) {
-                buffer += word;
+        for word in words {
+            if let Some(replacement) = word_lookup.get(word) {
+                buffer += replacement;
             } else {
-                for c in input_word.chars() {
-                    if let Some(letter) = letters.get(&c) {
-                        buffer += letter;
+                for c in word.chars() {
+                    if let Some(replacement) = letter_lookup.get(&c) {
+                        buffer.push_str(replacement);
                     }
                 }
             }
@@ -92,18 +121,25 @@ fn main() {
         }
     }
 
-    println!("{buffer}");
+    match args {
+        Args::Terminal => {
+            println!("{buffer}");
+        },
 
-    // TODO:
-    // Use set_contents_for_duration so that it sticks around for longer on linux.
-    // In the mean time we will call this and print to stdout
-    match cli_clipboard::set_contents(buffer) {
-        Ok(_) => {
-            println!("Copied to clipboard!");
-        }
+        Args::Clipboard => {
+            // TODO:
+            // Use set_contents_for_duration so that it sticks around for longer on linux.
+            // In the mean time we will call this and print to stdout
+            match cli_clipboard::set_contents(buffer.clone()) {
+                Ok(_) => {
+                    println!("Copied to clipboard!");
+                },
 
-        Err(_) => {
-            // println!("{buffer}");
-        }
+                Err(_) => {
+                    println!("Unable to copy to clipboard!");
+                    println!("{buffer}");
+                },
+            }
+        },
     }
 }
